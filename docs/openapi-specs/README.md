@@ -2,8 +2,6 @@
 
 This folder demonstrates how OpenAPI specifications enable reliable, maintainable REST API development. The approach addresses fundamental challenges: **APIs need formal contracts to ensure consistency, enable tooling, and facilitate team collaboration**.
 
-DISCLAIMER: Everything in this repo should be taken as an example. I don't guarantee/ claim that the code provided in the read me or anywhere works fully. This repo is only for illustration purposes.
-
 ## 🤔 The API Development Problem
 
 Unstructured API development creates significant challenges:

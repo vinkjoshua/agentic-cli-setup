@@ -4,6 +4,8 @@
 
 This repository implements the structured context framework described in the article ["Context is All You Need: How to Supercharge Your Programming Workflow using Agentic CLI Tools"](./article.md). It addresses the critical "learning gap" that causes 95% of AI projects to fail by providing LLMs with comprehensive project context through a "briefing packet" approach.
 
+DISCLAIMER: Everything in this repo should be taken as an example. I don't guarantee/ claim that the code provided in the read me or anywhere works fully. This repo is only for illustration purposes.
+
 ## 🎯 The Problem & Solution
 
 **The Problem**: Generic LLMs fail in production because they lack project-specific context. They don't understand your architectural decisions, business requirements, or codebase patterns.
@@ -292,21 +294,9 @@ Extend beyond the basic templates:
 ## 📚 Additional Resources
 
 - **Original Article**: [article.md](./article.md) - The complete philosophy and methodology
-- **ADR Templates**: Based on Michael Nygard's format
 - **MCP Documentation**: [Model Context Protocol](https://modelcontextprotocol.io/)
 - **Claude Code Docs**: [Anthropic Documentation](https://docs.anthropic.com/en/docs/claude-code)
 - **Gemini CLI**: [Google's Repository](https://github.com/google-gemini/gemini-cli)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add your context templates or MCP server configurations
-4. Submit a pull request with clear documentation
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
