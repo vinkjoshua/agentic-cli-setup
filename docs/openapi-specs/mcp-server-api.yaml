@@ -1,0 +1,510 @@
+openapi: 3.0.3
+info:
+  title: MCP Context Server API
+  description: |
+    API specification for Model Context Protocol server that manages AI agent context,
+    tool execution, and agentic workflows. This server implements the "Plan, Propose, 
+    Proceed" pattern for safe AI agent operations.
+  version: 1.0.0
+  contact:
+    name: AI Engineering Team
+    email: ai-team@example.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://mcp.context7.com/api/v1
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  /context/load:
+    post:
+      summary: Load project context
+      description: Loads comprehensive project context including ADRs, schemas, and specifications
+      operationId: loadContext
+      tags:
+        - Context Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextLoadRequest'
+      responses:
+        '200':
+          description: Context loaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextLoadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /context/validate:
+    post:
+      summary: Validate context completeness
+      description: Validates that all required context documents are present and valid
+      operationId: validateContext
+      tags:
+        - Context Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextValidationRequest'
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextValidationResponse'
+
+  /agent/plan:
+    post:
+      summary: Generate execution plan
+      description: Implements the "Plan" phase of the Plan-Propose-Proceed pattern
+      operationId: generatePlan
+      tags:
+        - Agent Operations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+      responses:
+        '200':
+          description: Plan generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+
+  /agent/propose:
+    post:
+      summary: Propose changes
+      description: Implements the "Propose" phase showing planned changes for approval
+      operationId: proposeChanges
+      tags:
+        - Agent Operations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposeRequest'
+      responses:
+        '200':
+          description: Proposal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposeResponse'
+
+  /agent/proceed:
+    post:
+      summary: Execute approved plan
+      description: Implements the "Proceed" phase executing approved changes
+      operationId: executePlan
+      tags:
+        - Agent Operations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProceedRequest'
+      responses:
+        '200':
+          description: Execution completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProceedResponse'
+
+  /tools/list:
+    get:
+      summary: List available tools
+      description: Returns all MCP tools available to the agent
+      operationId: listTools
+      tags:
+        - Tools
+      responses:
+        '200':
+          description: List of available tools
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolsList'
+
+  /tools/execute:
+    post:
+      summary: Execute a tool
+      description: Executes a specific MCP tool with given parameters
+      operationId: executeTool
+      tags:
+        - Tools
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolExecutionRequest'
+      responses:
+        '200':
+          description: Tool execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolExecutionResponse'
+
+  /sessions/{sessionId}:
+    get:
+      summary: Get session details
+      description: Retrieves information about an agent session
+      operationId: getSession
+      tags:
+        - Sessions
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ContextLoadRequest:
+      type: object
+      required:
+        - projectPath
+        - contextTypes
+      properties:
+        projectPath:
+          type: string
+          description: Path to project documentation
+          example: ./docs
+        contextTypes:
+          type: array
+          items:
+            type: string
+            enum: [ADR, USER_STORY, OPENAPI, SCHEMA, PYDANTIC]
+          example: [ADR, USER_STORY, OPENAPI]
+        maxTokens:
+          type: integer
+          description: Maximum tokens to use for context
+          default: 100000
+          example: 50000
+
+    ContextLoadResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        documentsLoaded:
+          type: integer
+          example: 15
+        tokensUsed:
+          type: integer
+          example: 45000
+        contextId:
+          type: string
+          format: uuid
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContextDocument'
+
+    ContextDocument:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [ADR, USER_STORY, OPENAPI, SCHEMA, PYDANTIC]
+        title:
+          type: string
+        content:
+          type: string
+        tokens:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ContextValidationRequest:
+      type: object
+      required:
+        - contextId
+      properties:
+        contextId:
+          type: string
+          format: uuid
+        requirements:
+          type: array
+          items:
+            type: string
+
+    ContextValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum: [ERROR, WARNING, INFO]
+
+    PlanRequest:
+      type: object
+      required:
+        - task
+        - contextId
+      properties:
+        task:
+          type: string
+          description: Task description for the agent
+          example: "Implement user authentication with JWT tokens"
+        contextId:
+          type: string
+          format: uuid
+        constraints:
+          type: array
+          items:
+            type: string
+
+    PlanResponse:
+      type: object
+      properties:
+        planId:
+          type: string
+          format: uuid
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              stepNumber:
+                type: integer
+              description:
+                type: string
+              tools:
+                type: array
+                items:
+                  type: string
+              estimatedTime:
+                type: string
+        totalEstimatedTime:
+          type: string
+        riskAssessment:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+
+    ProposeRequest:
+      type: object
+      required:
+        - planId
+      properties:
+        planId:
+          type: string
+          format: uuid
+        preview:
+          type: boolean
+          default: true
+
+    ProposeResponse:
+      type: object
+      properties:
+        proposalId:
+          type: string
+          format: uuid
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [CREATE, UPDATE, DELETE]
+              path:
+                type: string
+              before:
+                type: string
+              after:
+                type: string
+        requiresApproval:
+          type: boolean
+        approvalToken:
+          type: string
+
+    ProceedRequest:
+      type: object
+      required:
+        - proposalId
+        - approvalToken
+      properties:
+        proposalId:
+          type: string
+          format: uuid
+        approvalToken:
+          type: string
+        dryRun:
+          type: boolean
+          default: false
+
+    ProceedResponse:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [SUCCESS, PARTIAL, FAILED]
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: integer
+              status:
+                type: string
+              output:
+                type: string
+              error:
+                type: string
+
+    ToolsList:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              parameters:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    type:
+                      type: string
+                    required:
+                      type: boolean
+                    description:
+                      type: string
+
+    ToolExecutionRequest:
+      type: object
+      required:
+        - toolName
+        - parameters
+      properties:
+        toolName:
+          type: string
+          example: "github.create_pull_request"
+        parameters:
+          type: object
+          additionalProperties: true
+        sessionId:
+          type: string
+          format: uuid
+
+    ToolExecutionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        result:
+          type: object
+        error:
+          type: string
+        executionTime:
+          type: number
+          format: float
+
+    Session:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        contextId:
+          type: string
+          format: uuid
+        toolsExecuted:
+          type: integer
+        status:
+          type: string
+          enum: [ACTIVE, IDLE, COMPLETED, ERROR]
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: array
+                items:
+                  type: string
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid API key or token"
