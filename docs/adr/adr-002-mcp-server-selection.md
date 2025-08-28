@@ -7,8 +7,6 @@
 
 ## Context
 
-This section describes the "why" behind the decision. It outlines the problem, the driving factors, and any constraints.
-
 * **Problem**: With the proliferation of Model Context Protocol (MCP) servers, teams need a systematic approach to selecting and integrating appropriate servers for their agentic workflows. Poor server selection can lead to security vulnerabilities, performance issues, or inadequate functionality for the intended use cases.
 
 * **Drivers**:

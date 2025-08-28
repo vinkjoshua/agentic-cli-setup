@@ -7,8 +7,6 @@
 
 ## Context
 
-This section describes the "why" behind the decision. It outlines the problem, the driving factors, and any constraints.
-
 * **Problem**: Generic LLMs fail to deliver meaningful results in production software development due to lack of project-specific context. MIT research suggests a 95% failure rate for generative AI business projects, primarily due to the "learning gap" where LLMs don't understand the specific codebase, architectural decisions, or business requirements.
 
 * **Drivers**:
